@@ -1,6 +1,6 @@
 #28 de agosto 2024
 #Autor Carmen Trejo
-#Normalizacion de archivos AFE con agimirna procedimiento chatgpt
+#Normalizacion de archivos AFE 
 
 library(limma)
 library(AgiMicroRna)
