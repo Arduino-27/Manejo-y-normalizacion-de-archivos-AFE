@@ -64,7 +64,7 @@ targets <- data.frame(
     }
     
     if (is.null(exp.names)){
-      annotation = c( "ControlType", "ProbeName","GeneName")
+      annotation = c("ControlType", "ProbeName", "SystematicName")
     }
     
     if (is.null(exp.names)){
@@ -96,7 +96,7 @@ targets <- data.frame(
     rownames(Newagi$targets) = exp.names
     colnames(Newagi$targets) = "FileName"
     
-    # $genes ("ControlType","ProbeName","GeneName") 
+    # $genes ("ControlType", "ProbeName", "SystematicName") 
     j <- match(annotation, colnames(obj), 0)
     if (any(j > 0)){
       Newagi$genes <- data.frame(obj[, j, drop = FALSE], check.names = FALSE)
@@ -146,7 +146,7 @@ dd <- read.agiMicroRna(targets,
                                           IsFeatNonUnifOF="gIsFeatNonUnifOL",
                                           IsFeatPopnOL="gIsFeatPopnOL",
                                           BGKmd="gBGMedianSignal"),
-                       annotation = c( "ControlType", "ProbeName","SystematicName"),
+                       annotation = c( "ControlType", "ProbeName", "SystematicName"),
                        verbose=TRUE)
 dim(dd)
 print(names(dd))
@@ -180,14 +180,25 @@ is_mirna <- grep("^hsa", rownames(expr_mirna))
 mirna_exprMat <- expr_mirna[is_mirna,]
 
 # Realizar la normalización de datos de microARN
-ddTGS=tgsMicroRna(dd,
-                  offset,
-                  half=TRUE,
-                  makePLOT=FALSE,
-                  verbose=FALSE)
+ddNORM=tgsNormalization(dd,"quantile",
+                        makePLOTpre=FALSE,
+                        makePLOTpost=TRUE,
+                        targets=targets,
+                        verbose=TRUE)
 
-ddNORM=tgsNormalization(ddTGS,"quantile",
-                        makePLOTpre=FALSE,makePLOTpost=TRUE,targets,verbose=TRUE)
+# Extraer los datos normalizados de la señal procesada
+norm_expr <- ddNORM$procS
+
+# Guardar la matriz como archivo CSV
+write.csv(norm_expr, file = "normalized_expression.csv", row.names = TRUE)
+
+
+
+
+
+
+
+
 
 
 
