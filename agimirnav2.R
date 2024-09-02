@@ -12,15 +12,16 @@ data_dir_miR <- "~/Documentos/archivos a normalizar/GSE208677_RAW_mirnas"
 
 #Hacer un dataframe de la lista del nombre de los archivos, con tratamiento, repeticiones y el sujeto 
 targets <- data.frame(
-  FileName = c("GSM6364066_26_R1.txt", "GSM6364067_26_R2.txt", "GSM6364068_26_R3.txt", "GSM6364069_27_R1.txt", "GSM6364070_27_R2.txt", "GSM6364071_27_R3.txt", "GSM6364072_3_R1.txt",
-               "GSM6364073_3_R2.txt", "GSM6364074_3_R3.txt", "GSM6364075_48_R1.txt", "GSM6364076_48_R2.txt", "GSM6364077_48_R3.txt", "GSM6364078_49_R2.txt", "GSM6364079_49_R3.txt",
-               "GSM6364080_50_R1.txt", "GSM6364081_50_R2.txt", "GSM6364082_50_R3.txt", "GSM6364083_51_R1.txt", "GSM6364084_51_R2.txt", "GSM6364085_52_R1.txt", "GSM6364086_52_R2.txt",
-               "GSM6364087_52_R3.txt", "GSM6364088_53_R1.txt", "GSM6364089_53_R2.txt", "GSM6364090_53_R3.txt", "GSM6364091_C1_R1.txt", "GSM6364092_C1_R2.txt", "GSM6364093_C1_R3.txt",
-               "GSM6364094_C2_R1.txt","GSM6364095_C2_R2.txt" ),
+  FileName = c("GSM6364066.txt", "GSM6364067.txt", "GSM6364068.txt", "GSM6364069.txt", "GSM6364070.txt", "GSM6364071.txt", "GSM6364072.txt",
+               "GSM6364073.txt", "GSM6364074.txt", "GSM6364075.txt", "GSM6364076.txt", "GSM6364077.txt", "GSM6364078.txt", "GSM6364079.txt",
+               "GSM6364080.txt", "GSM6364081.txt", "GSM6364082.txt", "GSM6364083.txt", "GSM6364084.txt", "GSM6364085.txt", "GSM6364086.txt",
+               "GSM6364087.txt", "GSM6364088.txt", "GSM6364089.txt", "GSM6364090.txt", "GSM6364091.txt", "GSM6364092.txt", "GSM6364093.txt",
+               "GSM6364094.txt","GSM6364095.txt" ),
   Treatment  = rep("A",30),
   GErep = c(1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2),
   Subject = c(26, 26, 26, 27, 27, 27, 3, 3, 3, 48, 48, 48, 49, 49, 50, 50, 50, 51, 51, 52, 52, 52, 53, 53, 53, 1, 1, 1, 2, 2)
 )
+
 
 #Crear funcion tomado de https://rdrr.io/bioc/AgiMicroRna/src/R/read.agiMicroRna.R#sym-%60read.agiMicroRna%60
 
@@ -151,22 +152,24 @@ dim(dd)
 print(names(dd))
 
 #plots 
-pdf("qcplots.pdf")
-qcPlots(dd,offset=5,
+#No se estan guardando las imagenes 
+qcPlots(dd,offset=5, 
         MeanSignal=TRUE,
-        ProcessedSignal=FALSE,
+        ProcessedSignal=TRUE,
         TotalProbeSignal=FALSE,
         TotalGeneSignal=FALSE,
         BGMedianSignal=FALSE,
         BGUsed=FALSE,
         targets)
+png("qcPlots.png", width = 800, height = 600)
+pdf("qcPlots.pdf", width = 8, height = 6)
 dev.off()
 
 #Construir una matriz de niveles de expresion de los mirnas (sin normalizar )
 eset_mirna <- esetMicroRna(dd, targets)
 expr_mirna <- exprs(eset_mirna)
 
-annotation <- vroom::vroom("GSM6364088_53_R1.txt", skip = 9, .name_repair = janitor::make_clean_names)
+annotation <- vroom::vroom("GSM6364088.txt", skip = 9, .name_repair = janitor::make_clean_names)
 
 rownames(expr_mirna) <- annotation$systematic_name
 
@@ -176,23 +179,15 @@ is_mirna <- grep("^hsa", rownames(expr_mirna))
 
 mirna_exprMat <- expr_mirna[is_mirna,]
 
-
+# Realizar la normalización de datos de microARN
 ddTGS=tgsMicroRna(dd,
+                  offset,
                   half=TRUE,
                   makePLOT=FALSE,
                   verbose=FALSE)
 
-# Realizar la normalización de datos de microARN
-ddNORM <- tgsNormalization(
-  ddTGS,                # Datos a normalizar
-  "quantile",           # Método de normalización
-  makePLOTpre = FALSE,  # No generar gráficos antes de la normalización
-  makePLOTpost = FALSE, # No generar gráficos después de la normalización
-  targets,        # Información de los objetivos o meta datos
-  verbose = TRUE        # Mostrar mensajes detallados
-)
-
-
+ddNORM=tgsNormalization(ddTGS,"quantile",
+                        makePLOTpre=FALSE,makePLOTpost=TRUE,targets,verbose=TRUE)
 
 
 
