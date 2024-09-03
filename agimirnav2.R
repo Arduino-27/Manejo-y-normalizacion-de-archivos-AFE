@@ -6,9 +6,7 @@ library(limma)
 library(AgiMicroRna)
 ls("package:AgiMicroRna")
 help(package = "AgiMicroRna")
-
-data_dir_miR <- "~/Documentos/archivos a normalizar/GSE208677_RAW_mirnas"
-
+browseVignettes(package = "AgiMicroRna")
 
 #Hacer un dataframe de la lista del nombre de los archivos, con tratamiento, repeticiones y el sujeto 
 targets <- data.frame(
@@ -21,7 +19,6 @@ targets <- data.frame(
   GErep = c(1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3, 1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2),
   Subject = c(26, 26, 26, 27, 27, 27, 3, 3, 3, 48, 48, 48, 49, 49, 50, 50, 50, 51, 51, 52, 52, 52, 53, 53, 53, 1, 1, 1, 2, 2)
 )
-
 
 #Crear funcion tomado de https://rdrr.io/bioc/AgiMicroRna/src/R/read.agiMicroRna.R#sym-%60read.agiMicroRna%60
 
@@ -150,7 +147,6 @@ dd <- read.agiMicroRna(targets,
                        verbose=TRUE)
 dim(dd)
 print(names(dd))
-
 #plots 
 #No se estan guardando las imagenes 
 qcPlots(dd,offset=5, 
@@ -179,18 +175,25 @@ is_mirna <- grep("^hsa", rownames(expr_mirna))
 
 mirna_exprMat <- expr_mirna[is_mirna,]
 
-# Realizar la normalización de datos de microARN
+# Realizar la normalización de datos por quantiles entre microarreglos 
 ddNORM=tgsNormalization(dd,"quantile",
-                        makePLOTpre=FALSE,
+                        makePLOTpre=TRUE,
                         makePLOTpost=TRUE,
                         targets=targets,
                         verbose=TRUE)
 
 # Extraer los datos normalizados de la señal procesada
 norm_expr <- ddNORM$procS
+norm_expr_names <- ddNORM$genes
+combined_df <- cbind(norm_expr, norm_expr_names)
 
 # Guardar la matriz como archivo CSV
 write.csv(norm_expr, file = "normalized_expression.csv", row.names = TRUE)
+write.csv(combined_df, file = "norm_expr_quantil_total.csv")
+
+#Realizar la normalizacion por RMA para conocer un esitmado de la senal de cada mirna 
+ddTGS.rma=rmaMicroRna(dd,normalize=TRUE,background=TRUE)
+str(dd)
 
 
 
