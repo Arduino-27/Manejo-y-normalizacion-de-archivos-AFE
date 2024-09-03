@@ -191,9 +191,18 @@ combined_df <- cbind(norm_expr, norm_expr_names)
 write.csv(norm_expr, file = "normalized_expression.csv", row.names = TRUE)
 write.csv(combined_df, file = "norm_expr_quantil_total.csv")
 
+#Obtener la matriz de normalizacion por quantiles con el nombre de los mirnas 
+rownames(norm_expr) <- annotation$systematic_name
+is_mirna <- grep("^hsa", rownames(norm_expr))
+mirna_matriz <- norm_expr[is_mirna,]
+write.csv(mirna_matriz, file = "norm_expr_quantil_mirnas.csv")
+
+
 #Realizar la normalizacion por RMA para conocer un esitmado de la senal de cada mirna 
 ddTGS.rma=rmaMicroRna(dd,normalize=TRUE,background=TRUE)
 str(dd)
+
+
 
 
 
