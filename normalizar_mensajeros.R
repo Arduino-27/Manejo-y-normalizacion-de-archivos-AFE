@@ -32,36 +32,6 @@ if (require(limma, quietly = TRUE)) {
   cat("El paquete no está instalado.\n")
 }
 
-# Descargar archivo GSM_miRNAs de RB 
-gsm_mirna <- getGEO("GSE208677", GSEMatrix = TRUE)
-# Extraer los datos de la muestra
-gsm_data_mirna <- exprs(gsm_mirna[[1]])
-
-# Mostrar las primeras filas de los datos
-head(gsm_data_mirna)
-
-# Verificar los datos
-summary(gsm_data_mirna)
-
-# Limpiar los datos (por ejemplo, eliminar filas con NA)
-gsm_data_clean_mirna <- na.omit(gsm_data_mirna)
-
-# Normalización por quantiles
-norm_data_mirna <- normalizeBetweenArrays(gsm_data_clean_mirna, method = "quantile")
-
-# Mostrar las primeras filas de los datos normalizados
-head(norm_data_mirna)
-mirnas <- norm_data_mirna
-
-# Visualización con boxplot antes y después de la normalización
-par(mfrow=c(1,2))
-boxplot(gsm_data_clean_mirna, main = "Antes de la normalización")
-boxplot(mirnas, main = "Después de la normalización")
-
-#Guarda los datos normalizados 
-write.csv(mirnas, "datos_normalizados_miRNAs.csv", row.names = TRUE)
-
-
 # Descargar un archivo GSM_mRNAs RNAs MENSAJEROS 
 gsm_mensajeros <- getGEO("GSE208143", GSEMatrix = TRUE)
 # Extraer los datos de la muestra
@@ -129,7 +99,8 @@ colMedians=function(mat,na.rm=TRUE) {return(apply(mat,2,median,na.rm=na.rm))}
 precolaps <- data.frame(genesymbol, mensajeros)
 colapsed <- do.call(rbind, lapply(split(precolaps,precolaps[,1]), function(chunk) {colMedians(chunk[,-1])}))
 
-
+#Guarda los datos normalizados, anotados y colapsados por mediana 
+write.csv(colapsed, "mensajeros_normalizados_anotados_mediana.csv", row.names = TRUE)
 
 
 
